@@ -40,6 +40,15 @@ env = SConscript("godot-cpp/SConstruct", {"env": env, "customs": customs})
 env.Append(CPPPATH=["src/"])
 sources = Glob("src/*.cpp")
 
+if env['platform'] == 'android':
+    darwin_flags = ['-Wl,-dead_strip', '-dead_strip_dylibs', '-no_warn_duplicate_libraries', '-dynamic', '-dylib']
+
+    for flag in darwin_flags:
+        while flag in env.get('LINKFLAGS', []):
+            env['LINKFLAGS'].remove(flag)
+    # 可选：添加 Android 推荐的优化
+    env.Append(LINKFLAGS=['-Wl,--gc-sections'])
+
 if env["target"] in ["editor", "template_debug"]:
     try:
         doc_data = env.GodotCPPDocData("src/gen/doc_data.gen.cpp", source=Glob("doc_classes/*.xml"))
